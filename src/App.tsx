@@ -1,54 +1,89 @@
 import "./App.css";
-import { TonConnectButton } from "@tonconnect/ui-react";
-import { Counter } from "./components/Counter";
-import { Jetton } from "./components/Jetton";
-import { TransferTon } from "./components/TransferTon";
-import styled from "styled-components";
-import { Button, FlexBoxCol, FlexBoxRow } from "./components/styled/styled";
+import { TonConnectButton, useTonConnectUI } from "@tonconnect/ui-react";
 import { useTonConnect } from "./hooks/useTonConnect";
-import { CHAIN } from "@tonconnect/protocol";
 import "@twa-dev/sdk";
-
-const StyledApp = styled.div`
-  background-color: #e8e8e8;
-  color: black;
-
-  @media (prefers-color-scheme: dark) {
-    background-color: #222;
-    color: white;
-  }
-  min-height: 100vh;
-  padding: 20px 20px;
-`;
-
-const AppContainer = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-`;
+import {
+  Form,
+  ImageUploader,
+  ImageUploadItem,
+  Input,
+  NavBar,
+  Selector,
+  TextArea,
+} from "antd-mobile";
+import { useState } from "react";
 
 function App() {
   const { network } = useTonConnect();
 
+  const [fileList, setFileList] = useState<ImageUploadItem[]>([]);
+  const [tonConnectUI, setOptions] = useTonConnectUI();
+
+  async function mockUpload(file: File) {
+    return {
+      url: URL.createObjectURL(file),
+    };
+  }
+
+  const options = [
+    {
+      label: "cartoon",
+      value: "1",
+    },
+    {
+      label: "cyberpunk",
+      value: "2",
+    },
+    {
+      label: "film",
+      value: "3",
+    },
+  ];
+
   return (
-    <StyledApp>
-      <AppContainer>
-        <FlexBoxCol>
-          <FlexBoxRow>
-            <TonConnectButton />
-            <Button>
-              {network
-                ? network === CHAIN.MAINNET
-                  ? "mainnet"
-                  : "testnet"
-                : "N/A"}
-            </Button>
-          </FlexBoxRow>
-          <Counter />
-          <TransferTon />
-          <Jetton />
-        </FlexBoxCol>
-      </AppContainer>
-    </StyledApp>
+    <div>
+      <NavBar
+      style={{ '--height': '56px' }}
+        right={
+          <TonConnectButton className="mb-4"/>
+        }
+        backIcon={false}
+      >
+        DeAI
+      </NavBar>
+      <Form>
+        <Form.Item name="model" label="Choose a Model">
+          <Input placeholder="Enter" />
+        </Form.Item>
+        <Form.Item
+          name="textPrompt"
+          label="Text Prompt"
+          rules={[{ required: true }]}
+        >
+          <TextArea
+            placeholder="Enter desired prompt here"
+            // value={value}
+            // onChange={val => {
+            //   setValue(val)
+            // }}
+          />
+        </Form.Item>
+        <Form.Item name="imagePrompt" label="Image Prompt">
+          <ImageUploader
+            value={fileList}
+            onChange={setFileList}
+            upload={mockUpload}
+          />
+        </Form.Item>
+        <Form.Item name="style" label="Style">
+          <Selector
+            options={options}
+            defaultValue={["1"]}
+            onChange={(arr, extend) => console.log(arr, extend.items)}
+          />
+        </Form.Item>
+      </Form>
+    </div>
   );
 }
 
